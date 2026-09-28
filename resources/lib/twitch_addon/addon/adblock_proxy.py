@@ -8,7 +8,6 @@
     SPDX-License-Identifier: GPL-3.0-only
     See LICENSES/GPL-3.0-only for more information.
 """
-
 import re
 import time
 import threading
@@ -48,12 +47,126 @@ AD_URL_PATTERNS = [
     re.compile(r'/ad/', re.IGNORECASE),
     re.compile(r'amazon-adsystem', re.IGNORECASE),
     re.compile(r'advertisement', re.IGNORECASE),
+    re.compile(r'/ads/', re.IGNORECASE),
+    re.compile(r'advert', re.IGNORECASE),
+    re.compile(r'commercial', re.IGNORECASE),
+    re.compile(r'sponsor', re.IGNORECASE),
+    re.compile(r'promo', re.IGNORECASE),
+    re.compile(r'preroll', re.IGNORECASE),
+    re.compile(r'midroll', re.IGNORECASE),
+    re.compile(r'postroll', re.IGNORECASE),
+    re.compile(r'overlay', re.IGNORECASE),
+    re.compile(r'banner', re.IGNORECASE),
+    re.compile(r'click', re.IGNORECASE),
+    re.compile(r'tracking', re.IGNORECASE),
+    re.compile(r'beacon', re.IGNORECASE),
+    re.compile(r'analytics', re.IGNORECASE),
+    re.compile(r'metrics', re.IGNORECASE),
+    re.compile(r'doubleclick', re.IGNORECASE),
+    re.compile(r'googlesyndication', re.IGNORECASE),
+    re.compile(r'adservice', re.IGNORECASE),
+    re.compile(r'adserver', re.IGNORECASE),
+    re.compile(r'adtech', re.IGNORECASE),
+    re.compile(r'advertising', re.IGNORECASE),
+    re.compile(r'mobileads', re.IGNORECASE),
+    re.compile(r'video-ads', re.IGNORECASE),
+    re.compile(r'player-ads', re.IGNORECASE),
+    re.compile(r'vast', re.IGNORECASE),
+    re.compile(r'vpaid', re.IGNORECASE),
+    re.compile(r'ima', re.IGNORECASE),
+    re.compile(r'adsense', re.IGNORECASE),
+    re.compile(r'adwords', re.IGNORECASE),
+    re.compile(r'admanager', re.IGNORECASE),
+    re.compile(r'adview', re.IGNORECASE),
+    re.compile(r'adclick', re.IGNORECASE),
+    re.compile(r'adcount', re.IGNORECASE),
+    re.compile(r'adframe', re.IGNORECASE),
+    re.compile(r'adimage', re.IGNORECASE),
+    re.compile(r'adlog', re.IGNORECASE),
+    re.compile(r'adnet', re.IGNORECASE),
+    re.compile(r'adobe', re.IGNORECASE),
+    re.compile(r'adpicker', re.IGNORECASE),
+    re.compile(r'adpoint', re.IGNORECASE),
+    re.compile(r'adprovider', re.IGNORECASE),
+    re.compile(r'adrequest', re.IGNORECASE),
+    re.compile(r'adresponse', re.IGNORECASE),
+    re.compile(r'adsdk', re.IGNORECASE),
+    re.compile(r'adserver', re.IGNORECASE),
+    re.compile(r'adspace', re.IGNORECASE),
+    re.compile(r'adtag', re.IGNORECASE),
+    re.compile(r'adtype', re.IGNORECASE),
+    re.compile(r'adunit', re.IGNORECASE),
+    re.compile(r'adurl', re.IGNORECASE),
+    re.compile(r'advideo', re.IGNORECASE),
+    re.compile(r'adzone', re.IGNORECASE),
+    re.compile(r'bannerad', re.IGNORECASE),
+    re.compile(r'bannerads', re.IGNORECASE),
+    re.compile(r'clickad', re.IGNORECASE),
+    re.compile(r'clickads', re.IGNORECASE),
+    re.compile(r'flashad', re.IGNORECASE),
+    re.compile(r'flashads', re.IGNORECASE),
+    re.compile(r'html5ad', re.IGNORECASE),
+    re.compile(r'html5ads', re.IGNORECASE),
+    re.compile(r'imagead', re.IGNORECASE),
+    re.compile(r'imageads', re.IGNORECASE),
+    re.compile(r'inlinead', re.IGNORECASE),
+    re.compile(r'inlineads', re.IGNORECASE),
+    re.compile(r'layerad', re.IGNORECASE),
+    re.compile(r'layerads', re.IGNORECASE),
+    re.compile(r'linkad', re.IGNORECASE),
+    re.compile(r'linkads', re.IGNORECASE),
+    re.compile(r'mediaad', re.IGNORECASE),
+    re.compile(r'mediaads', re.IGNORECASE),
+    re.compile(r'popupad', re.IGNORECASE),
+    re.compile(r'popupads', re.IGNORECASE),
+    re.compile(r'popunder', re.IGNORECASE),
+    re.compile(r'popunderad', re.IGNORECASE),
+    re.compile(r'popunderads', re.IGNORECASE),
+    re.compile(r'prerollad', re.IGNORECASE),
+    re.compile(r'prerollads', re.IGNORECASE),
+    re.compile(r'rollad', re.IGNORECASE),
+    re.compile(r'rollads', re.IGNORECASE),
+    re.compile(r'scrollad', re.IGNORECASE),
+    re.compile(r'scrollads', re.IGNORECASE),
+    re.compile(r'sidebarad', re.IGNORECASE),
+    re.compile(r'sidebarads', re.IGNORECASE),
+    re.compile(r'skyscraperad', re.IGNORECASE),
+    re.compile(r'skyscraperads', re.IGNORECASE),
+    re.compile(r'staticad', re.IGNORECASE),
+    re.compile(r'staticads', re.IGNORECASE),
+    re.compile(r'textad', re.IGNORECASE),
+    re.compile(r'textads', re.IGNORECASE),
+    re.compile(r'videoad', re.IGNORECASE),
+    re.compile(r'videoads', re.IGNORECASE),
+    re.compile(r'videoad', re.IGNORECASE),
+    re.compile(r'videoads', re.IGNORECASE),
+    re.compile(r'webad', re.IGNORECASE),
+    re.compile(r'webads', re.IGNORECASE),
+    re.compile(r'widgetad', re.IGNORECASE),
+    re.compile(r'widgetads', re.IGNORECASE),
 ]
 
 AD_DATERANGE_CLASSES = [
     'twitch-ad', 'twitchads', 'amazon', 'ad-break', 'advertisement',
     'twitch-stitched-ad', 'stitched-ad', 'preroll', 'midroll', 'postroll',
     'twitch-ad-quartile', 'ad-quartile', 'twitch-ad-roll',
+    'ad', 'ads', 'advert', 'commercial', 'sponsor', 'promo',
+    'twitch-ad-roll', 'twitch-ad-pod', 'twitch-ad-pod-position',
+    'twitch-ad-pod-length', 'twitch-ad-url', 'twitch-ad-click-beacon-id',
+    'twitch-ad-ad-format', 'twitch-ad-af-icr-ad-id',
+    'twitch-ad-af-icr-creative-id', 'twitch-ad-af-icr-media-duration',
+    'twitch-ad-dsa-ss-context', 'twitch-ad-dsa-ss-location',
+    'twitch-ad-dsa-version', 'twitch-ad-loudness', 'twitch-ad-line-item-id',
+    'twitch-ad-rads-token', 'twitch-ad-stitched', 'twitch-ad-stitched-ad',
+    'twitch-ad-stitched-ad-roll', 'twitch-ad-stitched-ad-roll-type',
+    'twitch-ad-stitched-ad-pod', 'twitch-ad-stitched-ad-pod-position',
+    'twitch-ad-stitched-ad-pod-length', 'twitch-ad-stitched-ad-url',
+    'twitch-ad-stitched-ad-click-beacon-id', 'twitch-ad-stitched-ad-ad-format',
+    'twitch-ad-stitched-ad-af-icr-ad-id', 'twitch-ad-stitched-ad-af-icr-creative-id',
+    'twitch-ad-stitched-ad-af-icr-media-duration', 'twitch-ad-stitched-ad-dsa-ss-context',
+    'twitch-ad-stitched-ad-dsa-ss-location', 'twitch-ad-stitched-ad-dsa-version',
+    'twitch-ad-stitched-ad-loudness', 'twitch-ad-stitched-ad-line-item-id',
+    'twitch-ad-stitched-ad-rads-token',
 ]
 
 AD_ZONE_START_TAGS = ('#EXT-X-CUE-OUT', '#EXT-X-SCTE35-OUT', '#EXT-X-SPLICEINSERT')
@@ -62,7 +175,43 @@ AD_ZONE_END_TAGS = ('#EXT-X-CUE-IN', '#EXT-X-SCTE35-IN')
 # Additional ad indicators in DATERANGE attributes
 AD_DATERANGE_KEYWORDS = [
     'ad-', 'ads', 'advert', 'preroll', 'midroll', 'postroll',
-    'stitched', 'amazon', 'twitch-ad',
+    'stitched', 'amazon', 'twitch-ad', 'commercial', 'sponsor', 'promo',
+    'twitch-ad-roll', 'twitch-ad-pod', 'twitch-ad-pod-position',
+    'twitch-ad-pod-length', 'twitch-ad-url', 'twitch-ad-click-beacon-id',
+    'twitch-ad-ad-format', 'twitch-ad-af-icr-ad-id',
+    'twitch-ad-af-icr-creative-id', 'twitch-ad-af-icr-media-duration',
+    'twitch-ad-dsa-ss-context', 'twitch-ad-dsa-ss-location',
+    'twitch-ad-dsa-version', 'twitch-ad-loudness', 'twitch-ad-line-item-id',
+    'twitch-ad-rads-token', 'twitch-ad-stitched', 'twitch-ad-stitched-ad',
+    'twitch-ad-stitched-ad-roll', 'twitch-ad-stitched-ad-roll-type',
+    'twitch-ad-stitched-ad-pod', 'twitch-ad-stitched-ad-pod-position',
+    'twitch-ad-stitched-ad-pod-length', 'twitch-ad-stitched-ad-url',
+    'twitch-ad-stitched-ad-click-beacon-id', 'twitch-ad-stitched-ad-ad-format',
+    'twitch-ad-stitched-ad-af-icr-ad-id', 'twitch-ad-stitched-ad-af-icr-creative-id',
+    'twitch-ad-stitched-ad-af-icr-media-duration', 'twitch-ad-stitched-ad-dsa-ss-context',
+    'twitch-ad-stitched-ad-dsa-ss-location', 'twitch-ad-stitched-ad-dsa-version',
+    'twitch-ad-stitched-ad-loudness', 'twitch-ad-stitched-ad-line-item-id',
+    'twitch-ad-stitched-ad-rads-token',
+]
+
+# Twitch-specific ad tags that indicate ad content
+AD_TWITCH_TAGS = [
+    'X-TV-TWITCH-AD-',
+    'X-TV-TWITCH-AD-ROLL-TYPE',
+    'X-TV-TWITCH-AD-POD-LENGTH',
+    'X-TV-TWITCH-AD-POD-POSITION',
+    'X-TV-TWITCH-AD-URL',
+    'X-TV-TWITCH-AD-CLICK-BEACON-ID',
+    'X-TV-TWITCH-AD-AD-FORMAT',
+    'X-TV-TWITCH-AD-AF-ICR-AD-ID',
+    'X-TV-TWITCH-AD-AF-ICR-CREATIVE-ID',
+    'X-TV-TWITCH-AD-AF-ICR-MEDIA-DURATION',
+    'X-TV-TWITCH-AD-DSA-SS-CONTEXT',
+    'X-TV-TWITCH-AD-DSA-SS-LOCATION',
+    'X-TV-TWITCH-AD-DSA-VERSION',
+    'X-TV-TWITCH-AD-LOUDNESS',
+    'X-TV-TWITCH-AD-LINE-ITEM-ID',
+    'X-TV-TWITCH-AD-RADS-TOKEN',
 ]
 
 # ---------------------------------------------------------------------------
@@ -136,6 +285,14 @@ def _is_ad_daterange(line):
     return False
 
 
+def _has_twitch_ad_tag(line):
+    """Check if a line contains any Twitch-specific ad tag."""
+    for tag in AD_TWITCH_TAGS:
+        if tag in line:
+            return True
+    return False
+
+
 def _parse_ad_segments(lines):
     ad_indices = set()
     in_daterange_ad = False
@@ -144,6 +301,14 @@ def _parse_ad_segments(lines):
 
     for i, line in enumerate(lines):
         s = line.strip()
+
+        # Check for Twitch-specific ad tags (X-TV-TWITCH-AD-*)
+        if _has_twitch_ad_tag(s):
+            ad_indices.add(i)
+            # Also mark surrounding segments as ads
+            in_daterange_ad = True
+            seen_dr_segment = False
+            continue
 
         if s.startswith('#EXT-X-DATERANGE:'):
             if _is_ad_daterange(s):
@@ -172,7 +337,7 @@ def _parse_ad_segments(lines):
                     seen_dr_segment = False
             elif in_cue_ad:
                 ad_indices.add(i)
-            continue
+                continue
 
         if not s.startswith('#') and s:
             if in_daterange_ad or in_cue_ad:
