@@ -9,7 +9,8 @@
 
 > **DISCLAIMER — USE AT YOUR OWN RISK**
 >
-> This fork filters Twitch ads client-side. This violates Twitch's Terms of Service and may result in an account ban. Use at your own risk. The legitimate way to watch ad-free on Twitch is Turbo or a channel subscription (supported by the original addon).
+> This fork filters Twitch ads client-side. This violates Twitch's Terms of Service and may result in an account ban.
+> Use at your own risk. The legitimate way to watch ad-free on Twitch is Turbo or a channel subscription (supported by the original addon).
 >
 > **Note:** The ad filtering is not 100% foolproof. Twitch constantly changes their ad delivery methods, so occasionally ads may still slip through. If you see ads, please report them with a debug log so we can update the detection rules.
 
