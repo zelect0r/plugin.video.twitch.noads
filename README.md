@@ -4,7 +4,8 @@
 
 **Fork** of [anxdpanic/plugin.video.twitch](https://github.com/anxdpanic/plugin.video.twitch) with client-side ad filtering.
 
-> **Original addon:** [anxdpanic/plugin.video.twitch](https://github.com/anxdpanic/plugin.video.twitch) – the upstream project this fork is based on. Please support the original developers!
+> **Original addon:** [anxdpanic/plugin.video.twitch](https://github.com/anxdpanic/plugin.video.twitch) – the upstream project this fork is based on.
+> Please support the original developers!
 
 > **DISCLAIMER — USE AT YOUR OWN RISK**
 >
