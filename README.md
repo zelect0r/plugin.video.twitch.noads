@@ -167,26 +167,4 @@ If you find this addon useful, consider supporting development:
 
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20Development-ff5e5b?logo=ko-fi&logoColor=white)](https://ko-fi.com/zelect0r)
 
----
 
-## Credits
-
-Credit where credit is due.
-
-Thanks to all the people who contributed to this add-on. For a complete list of the people who have shaped this add-on, visit [CONTRIBUTORS](https://github.com/anxdpanic/plugin.video.twitch/blob/master/CONTRIBUTORS.md).
-
-### Founder of the add-on
-
-<a href="https://github.com/stateoftheart89">
-    <img src="https://avatars.githubusercontent.com/u/1682868?v=4" width="100;" alt="stateoftheart89"/>
-    <br />
-    <sub><b>stateoftheart89</b></sub>
-</a>
-
-### Author of [python-twitch](https://github.com/ingwinlu/python-twitch)
-
-<a href="https://github.com/ingwinlu">
-    <img src="https://avatars.githubusercontent.com/u/4435962?v=4" width="100;" alt="ingwinlu"/>
-    <br />
-    <sub><b>ingwinlu</b></sub>
-</a>
