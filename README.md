@@ -156,7 +156,7 @@ This addon includes or depends on the following third-party libraries:
 
 ## Support
 
-- **Issues:** [GitHub Issues](https://github.com/anxdpanic/plugin.video.twitch/issues)
+- **Issues:** [GitHub Issues](https://github.com/zelect0r/plugin.video.twitch.noads/issues)
 - **Forum:** [Twitch Addon Forum](https://twitchaddon.panicked.xyz/forum)
 
 ---
