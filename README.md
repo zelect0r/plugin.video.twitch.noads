@@ -167,6 +167,6 @@ This addon includes or depends on the following third-party libraries:
 
 If you find this addon useful, consider supporting development:
 
-[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20Development-ff5e5b?logo=ko-fi&logoColor=white)](https://ko-fi.com/zelect0r)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Ko--Fi%2Fzelect0r-ff5e5b?logo=ko-fi&logoColor=white)](https://ko-fi.com/zelect0r)
 
 
