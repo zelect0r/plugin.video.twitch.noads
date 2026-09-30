@@ -1,3 +1,9 @@
+1.0.2
+[upd] Refactored ad detection: precise URL patterns (no false positives)
+[upd] Added Twitch-specific X-TV-TWITCH-AD-* tag detection
+[upd] Improved DATERANGE class matching with explicit ad classes
+[upd] Removed overly aggressive URL keywords (click, banner, promo, etc.)
+
 1.0.1
 [upd] Improved ad detection: explicit midroll/preroll/postroll recognition
 [upd] Added Twitch-specific X-TV-TWITCH-AD-* tag detection

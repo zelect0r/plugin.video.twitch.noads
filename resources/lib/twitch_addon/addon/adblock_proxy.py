@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 """
 
-    Copyright (C) 212-2018 Twitch-on-Kodi
+    Copyright (C) 2012-2018 Twitch-on-Kodi
 
     This file is part of Twitch-on-Kodi (plugin.video.twitch)
 
     SPDX-License-Identifier: GPL-3.0-only
     See LICENSES/GPL-3.0-only for more information.
 """
+
 import re
 import time
 import threading
 import hashlib
 import uuid
 from collections import OrderedDict
-from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse, urljoin
 
@@ -31,170 +31,44 @@ except (ImportError, ModuleNotFoundError):
         LOGINFO = 1
         LOGWARNING = 2
         LOGERROR = 3
-
         def log(self, msg, level=0):
             pass
-
     log_utils = _FakeLog()
 
 import requests
 
-
 # ---------------------------------------------------------------------------
-# Ad detection patterns
+# Ad detection patterns (precise – no false positives)
 # ---------------------------------------------------------------------------
 AD_URL_PATTERNS = [
     re.compile(r'/ad/', re.IGNORECASE),
     re.compile(r'amazon-adsystem', re.IGNORECASE),
-    re.compile(r'advertisement', re.IGNORECASE),
-    re.compile(r'/ads/', re.IGNORECASE),
-    re.compile(r'advert', re.IGNORECASE),
-    re.compile(r'commercial', re.IGNORECASE),
-    re.compile(r'sponsor', re.IGNORECASE),
-    re.compile(r'promo', re.IGNORECASE),
-    re.compile(r'preroll', re.IGNORECASE),
-    re.compile(r'midroll', re.IGNORECASE),
-    re.compile(r'postroll', re.IGNORECASE),
-    re.compile(r'overlay', re.IGNORECASE),
-    re.compile(r'banner', re.IGNORECASE),
-    re.compile(r'click', re.IGNORECASE),
-    re.compile(r'tracking', re.IGNORECASE),
-    re.compile(r'beacon', re.IGNORECASE),
-    re.compile(r'analytics', re.IGNORECASE),
-    re.compile(r'metrics', re.IGNORECASE),
     re.compile(r'doubleclick', re.IGNORECASE),
     re.compile(r'googlesyndication', re.IGNORECASE),
     re.compile(r'adservice', re.IGNORECASE),
     re.compile(r'adserver', re.IGNORECASE),
     re.compile(r'adtech', re.IGNORECASE),
     re.compile(r'advertising', re.IGNORECASE),
-    re.compile(r'mobileads', re.IGNORECASE),
-    re.compile(r'video-ads', re.IGNORECASE),
-    re.compile(r'player-ads', re.IGNORECASE),
     re.compile(r'vast', re.IGNORECASE),
     re.compile(r'vpaid', re.IGNORECASE),
-    re.compile(r'ima', re.IGNORECASE),
-    re.compile(r'adsense', re.IGNORECASE),
-    re.compile(r'adwords', re.IGNORECASE),
-    re.compile(r'admanager', re.IGNORECASE),
-    re.compile(r'adview', re.IGNORECASE),
-    re.compile(r'adclick', re.IGNORECASE),
-    re.compile(r'adcount', re.IGNORECASE),
-    re.compile(r'adframe', re.IGNORECASE),
-    re.compile(r'adimage', re.IGNORECASE),
-    re.compile(r'adlog', re.IGNORECASE),
-    re.compile(r'adnet', re.IGNORECASE),
-    re.compile(r'adobe', re.IGNORECASE),
-    re.compile(r'adpicker', re.IGNORECASE),
-    re.compile(r'adpoint', re.IGNORECASE),
-    re.compile(r'adprovider', re.IGNORECASE),
-    re.compile(r'adrequest', re.IGNORECASE),
-    re.compile(r'adresponse', re.IGNORECASE),
-    re.compile(r'adsdk', re.IGNORECASE),
-    re.compile(r'adserver', re.IGNORECASE),
-    re.compile(r'adspace', re.IGNORECASE),
-    re.compile(r'adtag', re.IGNORECASE),
-    re.compile(r'adtype', re.IGNORECASE),
-    re.compile(r'adunit', re.IGNORECASE),
-    re.compile(r'adurl', re.IGNORECASE),
-    re.compile(r'advideo', re.IGNORECASE),
-    re.compile(r'adzone', re.IGNORECASE),
-    re.compile(r'bannerad', re.IGNORECASE),
-    re.compile(r'bannerads', re.IGNORECASE),
-    re.compile(r'clickad', re.IGNORECASE),
-    re.compile(r'clickads', re.IGNORECASE),
-    re.compile(r'flashad', re.IGNORECASE),
-    re.compile(r'flashads', re.IGNORECASE),
-    re.compile(r'html5ad', re.IGNORECASE),
-    re.compile(r'html5ads', re.IGNORECASE),
-    re.compile(r'imagead', re.IGNORECASE),
-    re.compile(r'imageads', re.IGNORECASE),
-    re.compile(r'inlinead', re.IGNORECASE),
-    re.compile(r'inlineads', re.IGNORECASE),
-    re.compile(r'layerad', re.IGNORECASE),
-    re.compile(r'layerads', re.IGNORECASE),
-    re.compile(r'linkad', re.IGNORECASE),
-    re.compile(r'linkads', re.IGNORECASE),
-    re.compile(r'mediaad', re.IGNORECASE),
-    re.compile(r'mediaads', re.IGNORECASE),
-    re.compile(r'popupad', re.IGNORECASE),
-    re.compile(r'popupads', re.IGNORECASE),
-    re.compile(r'popunder', re.IGNORECASE),
-    re.compile(r'popunderad', re.IGNORECASE),
-    re.compile(r'popunderads', re.IGNORECASE),
-    re.compile(r'prerollad', re.IGNORECASE),
-    re.compile(r'prerollads', re.IGNORECASE),
-    re.compile(r'rollad', re.IGNORECASE),
-    re.compile(r'rollads', re.IGNORECASE),
-    re.compile(r'scrollad', re.IGNORECASE),
-    re.compile(r'scrollads', re.IGNORECASE),
-    re.compile(r'sidebarad', re.IGNORECASE),
-    re.compile(r'sidebarads', re.IGNORECASE),
-    re.compile(r'skyscraperad', re.IGNORECASE),
-    re.compile(r'skyscraperads', re.IGNORECASE),
-    re.compile(r'staticad', re.IGNORECASE),
-    re.compile(r'staticads', re.IGNORECASE),
-    re.compile(r'textad', re.IGNORECASE),
-    re.compile(r'textads', re.IGNORECASE),
-    re.compile(r'videoad', re.IGNORECASE),
-    re.compile(r'videoads', re.IGNORECASE),
-    re.compile(r'videoad', re.IGNORECASE),
-    re.compile(r'videoads', re.IGNORECASE),
-    re.compile(r'webad', re.IGNORECASE),
-    re.compile(r'webads', re.IGNORECASE),
-    re.compile(r'widgetad', re.IGNORECASE),
-    re.compile(r'widgetads', re.IGNORECASE),
+    re.compile(r'video-ads', re.IGNORECASE),
+    re.compile(r'player-ads', re.IGNORECASE),
 ]
 
 AD_DATERANGE_CLASSES = [
     'twitch-ad', 'twitchads', 'amazon', 'ad-break', 'advertisement',
     'twitch-stitched-ad', 'stitched-ad', 'preroll', 'midroll', 'postroll',
     'twitch-ad-quartile', 'ad-quartile', 'twitch-ad-roll',
-    'ad', 'ads', 'advert', 'commercial', 'sponsor', 'promo',
-    'twitch-ad-roll', 'twitch-ad-pod', 'twitch-ad-pod-position',
-    'twitch-ad-pod-length', 'twitch-ad-url', 'twitch-ad-click-beacon-id',
-    'twitch-ad-ad-format', 'twitch-ad-af-icr-ad-id',
-    'twitch-ad-af-icr-creative-id', 'twitch-ad-af-icr-media-duration',
-    'twitch-ad-dsa-ss-context', 'twitch-ad-dsa-ss-location',
-    'twitch-ad-dsa-version', 'twitch-ad-loudness', 'twitch-ad-line-item-id',
-    'twitch-ad-rads-token', 'twitch-ad-stitched', 'twitch-ad-stitched-ad',
-    'twitch-ad-stitched-ad-roll', 'twitch-ad-stitched-ad-roll-type',
-    'twitch-ad-stitched-ad-pod', 'twitch-ad-stitched-ad-pod-position',
-    'twitch-ad-stitched-ad-pod-length', 'twitch-ad-stitched-ad-url',
-    'twitch-ad-stitched-ad-click-beacon-id', 'twitch-ad-stitched-ad-ad-format',
-    'twitch-ad-stitched-ad-af-icr-ad-id', 'twitch-ad-stitched-ad-af-icr-creative-id',
-    'twitch-ad-stitched-ad-af-icr-media-duration', 'twitch-ad-stitched-ad-dsa-ss-context',
-    'twitch-ad-stitched-ad-dsa-ss-location', 'twitch-ad-stitched-ad-dsa-version',
-    'twitch-ad-stitched-ad-loudness', 'twitch-ad-stitched-ad-line-item-id',
-    'twitch-ad-stitched-ad-rads-token',
 ]
 
 AD_ZONE_START_TAGS = ('#EXT-X-CUE-OUT', '#EXT-X-SCTE35-OUT', '#EXT-X-SPLICEINSERT')
 AD_ZONE_END_TAGS = ('#EXT-X-CUE-IN', '#EXT-X-SCTE35-IN')
 
-# Additional ad indicators in DATERANGE attributes
 AD_DATERANGE_KEYWORDS = [
     'ad-', 'ads', 'advert', 'preroll', 'midroll', 'postroll',
-    'stitched', 'amazon', 'twitch-ad', 'commercial', 'sponsor', 'promo',
-    'twitch-ad-roll', 'twitch-ad-pod', 'twitch-ad-pod-position',
-    'twitch-ad-pod-length', 'twitch-ad-url', 'twitch-ad-click-beacon-id',
-    'twitch-ad-ad-format', 'twitch-ad-af-icr-ad-id',
-    'twitch-ad-af-icr-creative-id', 'twitch-ad-af-icr-media-duration',
-    'twitch-ad-dsa-ss-context', 'twitch-ad-dsa-ss-location',
-    'twitch-ad-dsa-version', 'twitch-ad-loudness', 'twitch-ad-line-item-id',
-    'twitch-ad-rads-token', 'twitch-ad-stitched', 'twitch-ad-stitched-ad',
-    'twitch-ad-stitched-ad-roll', 'twitch-ad-stitched-ad-roll-type',
-    'twitch-ad-stitched-ad-pod', 'twitch-ad-stitched-ad-pod-position',
-    'twitch-ad-stitched-ad-pod-length', 'twitch-ad-stitched-ad-url',
-    'twitch-ad-stitched-ad-click-beacon-id', 'twitch-ad-stitched-ad-ad-format',
-    'twitch-ad-stitched-ad-af-icr-ad-id', 'twitch-ad-stitched-ad-af-icr-creative-id',
-    'twitch-ad-stitched-ad-af-icr-media-duration', 'twitch-ad-stitched-ad-dsa-ss-context',
-    'twitch-ad-stitched-ad-dsa-ss-location', 'twitch-ad-stitched-ad-dsa-version',
-    'twitch-ad-stitched-ad-loudness', 'twitch-ad-stitched-ad-line-item-id',
-    'twitch-ad-stitched-ad-rads-token',
+    'stitched', 'amazon', 'twitch-ad', 'commercial',
 ]
 
-# Twitch-specific ad tags that indicate ad content
 AD_TWITCH_TAGS = [
     'X-TV-TWITCH-AD-',
     'X-TV-TWITCH-AD-ROLL-TYPE',
@@ -219,16 +93,13 @@ AD_TWITCH_TAGS = [
 # ---------------------------------------------------------------------------
 _cache_lock = threading.Lock()
 
-# segment cache: url -> (content_bytes, content_type, timestamp)
 _segment_cache = OrderedDict()
 SEGMENT_CACHE_MAX = 512
-SEGMENT_TTL = 300  # 5 minutes
+SEGMENT_TTL = 300
 
-# playlist cache: url -> (processed_text, timestamp)
 _playlist_cache = OrderedDict()
-PLAYLIST_TTL = 4  # refresh slightly more often than target duration
+PLAYLIST_TTL = 4
 
-# manifest cache: playlist_url -> (processed_text, timestamp)
 _manifest_cache = OrderedDict()
 
 
@@ -241,7 +112,6 @@ def _cache_get(cache, key, ttl):
         if time.time() - ts > ttl:
             cache.pop(key, None)
             return None
-        # move to end (LRU)
         cache.move_to_end(key)
         return content
 
@@ -272,24 +142,17 @@ def _is_tag(line, names):
 
 
 def _is_ad_daterange(line):
-    """Check if a DATERANGE tag indicates an ad (class-based or keyword-based)."""
     lower = line.lower()
-    # Check class attribute against known ad classes
     for cls in AD_DATERANGE_CLASSES:
         if ('class="%s"' % cls) in lower or ("class='%s'" % cls) in lower:
             return True
-    # Check if any ad keyword appears in the tag
-    for kw in AD_DATERANGE_KEYWORDS:
-        if kw in lower:
-            return True
-    return False
-
-
-def _has_twitch_ad_tag(line):
-    """Check if a line contains any Twitch-specific ad tag."""
     for tag in AD_TWITCH_TAGS:
-        if tag in line:
+        if tag.lower() in lower:
             return True
+    if 'midroll' in lower or 'preroll' in lower or 'postroll' in lower:
+        return True
+    if 'x-tv-twitch-ad' in lower:
+        return True
     return False
 
 
@@ -301,14 +164,6 @@ def _parse_ad_segments(lines):
 
     for i, line in enumerate(lines):
         s = line.strip()
-
-        # Check for Twitch-specific ad tags (X-TV-TWITCH-AD-*)
-        if _has_twitch_ad_tag(s):
-            ad_indices.add(i)
-            # Also mark surrounding segments as ads
-            in_daterange_ad = True
-            seen_dr_segment = False
-            continue
 
         if s.startswith('#EXT-X-DATERANGE:'):
             if _is_ad_daterange(s):
@@ -337,7 +192,7 @@ def _parse_ad_segments(lines):
                     seen_dr_segment = False
             elif in_cue_ad:
                 ad_indices.add(i)
-                continue
+            continue
 
         if not s.startswith('#') and s:
             if in_daterange_ad or in_cue_ad:
@@ -375,6 +230,23 @@ def _parse_url_pattern_ad_segments(lines):
     return ad_indices
 
 
+def _parse_twitch_tag_ad_segments(lines):
+    ad_indices = set()
+    for i, line in enumerate(lines):
+        s = line.strip()
+        if s.startswith('#') and 'X-TV-TWITCH-AD' in s:
+            ad_indices.add(i)
+            if i + 1 < len(lines):
+                next_line = lines[i + 1].strip()
+                if not next_line.startswith('#') and next_line:
+                    ad_indices.add(i + 1)
+            if i > 0:
+                prev_line = lines[i - 1].strip()
+                if prev_line.startswith('#EXTINF'):
+                    ad_indices.add(i - 1)
+    return ad_indices
+
+
 class _ProxyState:
     playlist_url = None
     headers = {}
@@ -398,9 +270,8 @@ def _process_playlist(content, base_url):
         return content
 
     lines = content.splitlines(keepends=True)
-    ad_indices = _parse_ad_segments(lines) | _parse_url_pattern_ad_segments(lines)
+    ad_indices = _parse_ad_segments(lines) | _parse_url_pattern_ad_segments(lines) | _parse_twitch_tag_ad_segments(lines)
 
-    # Remove EXTINF tags that precede removed segments (avoid orphaned tags)
     for i in list(ad_indices):
         s = lines[i].strip()
         if not s.startswith('#') and s:
@@ -492,7 +363,6 @@ class AdBlockHandler(BaseHTTPRequestHandler):
         except Exception:
             self.close_connection = True
 
-    # -- GET routing -------------------------------------------------------
     def do_GET(self):
         parsed = urlparse(self.path)
         path = parsed.path
@@ -509,7 +379,6 @@ class AdBlockHandler(BaseHTTPRequestHandler):
         else:
             self._respond(404, b'Not found', 'text/plain')
 
-    # -- manifest (initial + playlist refresh) -----------------------------
     def _handle_manifest(self):
         with _ProxyState._lock:
             playlist_url = _ProxyState.playlist_url
@@ -519,7 +388,6 @@ class AdBlockHandler(BaseHTTPRequestHandler):
             self._respond(503, b'No playlist URL configured', 'text/plain')
             return
 
-        # Check manifest cache first
         cached = _cache_get(_manifest_cache, playlist_url, PLAYLIST_TTL)
         if cached is not None:
             self._respond(200, cached, 'application/vnd.apple.mpegurl')
@@ -529,7 +397,6 @@ class AdBlockHandler(BaseHTTPRequestHandler):
             resp = _fetch(playlist_url, headers)
             resp.raise_for_status()
         except Exception as e:
-            # Fallback to playlist cache
             cached = _cache_get(_playlist_cache, playlist_url, 60)
             if cached:
                 log_utils.log('AdBlockProxy: Twitch unreachable, serving cached playlist',
@@ -548,17 +415,18 @@ class AdBlockHandler(BaseHTTPRequestHandler):
 
         if processed != resp.text:
             log_utils.log('AdBlockProxy: Processed playlist (ads filtered)', log_utils.LOGDEBUG)
-            # Debug: log ad-related lines from raw playlist
             raw_lines = resp.text.splitlines()
-            ad_lines = [l.strip() for l in raw_lines if 'ad' in l.lower() or 'DATERANGE' in l or 'CUE' in l or 'DISCONTINUITY' in l]
+            ad_lines = [l.strip() for l in raw_lines
+                        if ('DATERANGE' in l or 'CUE' in l or 'DISCONTINUITY' in l
+                            or 'X-TV-TWITCH-AD' in l)]
             if ad_lines:
-                log_utils.log('AdBlockProxy: Raw ad lines: %s' % ' | '.join(ad_lines[:10]), log_utils.LOGDEBUG)
+                log_utils.log('AdBlockProxy: Raw ad lines: %s' % ' | '.join(ad_lines[:10]),
+                              log_utils.LOGDEBUG)
         else:
             log_utils.log('AdBlockProxy: No ads detected in playlist', log_utils.LOGDEBUG)
 
         self._respond(200, processed.encode('utf-8'), content_type)
 
-    # -- proxied URLs (variant playlists + segments) ------------------------
     def _handle_proxy_url(self, target_url):
         if not target_url:
             self._respond(404, b'Unknown proxy target', 'text/plain')
@@ -570,7 +438,6 @@ class AdBlockHandler(BaseHTTPRequestHandler):
         is_playlist = '.m3u8' in urlparse(target_url).path.lower()
 
         if is_playlist:
-            # Variant playlist: check cache
             cached = _cache_get(_playlist_cache, target_url, PLAYLIST_TTL)
             if cached is not None:
                 self._respond(200, cached.encode('utf-8'), 'application/vnd.apple.mpegurl')
@@ -594,7 +461,6 @@ class AdBlockHandler(BaseHTTPRequestHandler):
             self._respond(200, processed.encode('utf-8'), content_type)
             return
 
-        # Media segment: check cache first
         cached_content = _cache_get(_segment_cache, target_url, SEGMENT_TTL)
         if cached_content is not None:
             content, content_type = cached_content
@@ -614,7 +480,6 @@ class AdBlockHandler(BaseHTTPRequestHandler):
 
         content_type = resp.headers.get('Content-Type', 'video/MP2T')
 
-        # Read full content for caching (segments are small, ~1-2 MB)
         try:
             content = resp.content
         except Exception:
@@ -624,7 +489,6 @@ class AdBlockHandler(BaseHTTPRequestHandler):
         _cache_put(_segment_cache, target_url, (content, content_type), SEGMENT_CACHE_MAX)
         self._respond(200, content, content_type)
 
-    # -- response helper ---------------------------------------------------
     def _respond(self, status, body, content_type):
         try:
             self.send_response(status)
@@ -643,12 +507,6 @@ class AdBlockHandler(BaseHTTPRequestHandler):
 # Proxy server
 # ---------------------------------------------------------------------------
 class AdBlockProxy:
-    """
-    Local HTTP proxy that filters Twitch ad segments from HLS playlists.
-    Uses segment caching, playlist caching, and connection pooling for
-    high-performance parallel request handling.
-    """
-
     def __init__(self):
         self._server = None
         self._thread = None
@@ -694,9 +552,6 @@ class AdBlockProxy:
             log_utils.log('AdBlockProxy: Stopped', log_utils.LOGINFO)
 
 
-# ---------------------------------------------------------------------------
-# Module-level singleton
-# ---------------------------------------------------------------------------
 _proxy_instance = None
 
 
