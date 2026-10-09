@@ -1,3 +1,10 @@
+1.0.3
+[fix] Preserve HTTP byte-range requests and partial-content headers for HLS media
+[fix] Support HEAD requests for proxied resources
+[fix] Bound the proxied URL map during long playback sessions
+[upd] Tighten ad URL matching to reduce false positives on normal media paths
+[upd] Filter LL-HLS partial segments and preload hints inside detected ad breaks
+
 1.0.2
 [upd] Refactored ad detection: precise URL patterns (no false positives)
 [upd] Added Twitch-specific X-TV-TWITCH-AD-* tag detection

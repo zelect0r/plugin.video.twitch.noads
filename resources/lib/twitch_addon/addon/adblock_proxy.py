@@ -41,7 +41,9 @@ import requests
 # Ad detection patterns (precise – no false positives)
 # ---------------------------------------------------------------------------
 AD_URL_PATTERNS = [
+    # Twitch-specific ad URL patterns (high confidence)
     re.compile(r'/ad/', re.IGNORECASE),
+    re.compile(r'/ads/', re.IGNORECASE),
     re.compile(r'amazon-adsystem', re.IGNORECASE),
     re.compile(r'doubleclick', re.IGNORECASE),
     re.compile(r'googlesyndication', re.IGNORECASE),
@@ -53,12 +55,40 @@ AD_URL_PATTERNS = [
     re.compile(r'vpaid', re.IGNORECASE),
     re.compile(r'video-ads', re.IGNORECASE),
     re.compile(r'player-ads', re.IGNORECASE),
+    # Twitch-specific ad path patterns
+    re.compile(r'twitch\.tv/ad', re.IGNORECASE),
+    re.compile(r'ttvnw\.net/ad', re.IGNORECASE),
+    re.compile(r'jtvnw\.net/ad', re.IGNORECASE),
+    re.compile(r'usher\.ttvnw\.net/ad', re.IGNORECASE),
+    # SCTE-35 / DASH-IF patterns
+    re.compile(r'scte35', re.IGNORECASE),
+    re.compile(r'splice', re.IGNORECASE),
+    # Twitch ad segment URL patterns (more specific)
+    # Match explicit ad path components, not ordinary names such as
+    # "adaptive" or "download" that merely contain the letters "ad".
+    re.compile(r'/(?:ads?|advertisements?)(?:/|[-_.]|$)', re.IGNORECASE),
 ]
 
 AD_DATERANGE_CLASSES = [
     'twitch-ad', 'twitchads', 'amazon', 'ad-break', 'advertisement',
     'twitch-stitched-ad', 'stitched-ad', 'preroll', 'midroll', 'postroll',
     'twitch-ad-quartile', 'ad-quartile', 'twitch-ad-roll',
+    'twitch-ad-pod', 'twitch-ad-pod-position', 'twitch-ad-pod-length',
+    'twitch-ad-url', 'twitch-ad-click-beacon-id', 'twitch-ad-ad-format',
+    'twitch-ad-af-icr-ad-id', 'twitch-ad-af-icr-creative-id',
+    'twitch-ad-af-icr-media-duration', 'twitch-ad-dsa-ss-context',
+    'twitch-ad-dsa-ss-location', 'twitch-ad-dsa-version',
+    'twitch-ad-loudness', 'twitch-ad-line-item-id', 'twitch-ad-rads-token',
+    'twitch-ad-stitched', 'twitch-ad-stitched-ad',
+    'twitch-ad-stitched-ad-roll', 'twitch-ad-stitched-ad-roll-type',
+    'twitch-ad-stitched-ad-pod', 'twitch-ad-stitched-ad-pod-position',
+    'twitch-ad-stitched-ad-pod-length', 'twitch-ad-stitched-ad-url',
+    'twitch-ad-stitched-ad-click-beacon-id', 'twitch-ad-stitched-ad-ad-format',
+    'twitch-ad-stitched-ad-af-icr-ad-id', 'twitch-ad-stitched-ad-af-icr-creative-id',
+    'twitch-ad-stitched-ad-af-icr-media-duration', 'twitch-ad-stitched-ad-dsa-ss-context',
+    'twitch-ad-stitched-ad-dsa-ss-location', 'twitch-ad-stitched-ad-dsa-version',
+    'twitch-ad-stitched-ad-loudness', 'twitch-ad-stitched-ad-line-item-id',
+    'twitch-ad-stitched-ad-rads-token',
 ]
 
 AD_ZONE_START_TAGS = ('#EXT-X-CUE-OUT', '#EXT-X-SCTE35-OUT', '#EXT-X-SPLICEINSERT')
@@ -66,7 +96,23 @@ AD_ZONE_END_TAGS = ('#EXT-X-CUE-IN', '#EXT-X-SCTE35-IN')
 
 AD_DATERANGE_KEYWORDS = [
     'ad-', 'ads', 'advert', 'preroll', 'midroll', 'postroll',
-    'stitched', 'amazon', 'twitch-ad', 'commercial',
+    'stitched', 'amazon', 'twitch-ad', 'commercial', 'sponsor', 'promo',
+    'twitch-ad-roll', 'twitch-ad-pod', 'twitch-ad-pod-position',
+    'twitch-ad-pod-length', 'twitch-ad-url', 'twitch-ad-click-beacon-id',
+    'twitch-ad-ad-format', 'twitch-ad-af-icr-ad-id',
+    'twitch-ad-af-icr-creative-id', 'twitch-ad-af-icr-media-duration',
+    'twitch-ad-dsa-ss-context', 'twitch-ad-dsa-ss-location',
+    'twitch-ad-dsa-version', 'twitch-ad-loudness', 'twitch-ad-line-item-id',
+    'twitch-ad-rads-token', 'twitch-ad-stitched', 'twitch-ad-stitched-ad',
+    'twitch-ad-stitched-ad-roll', 'twitch-ad-stitched-ad-roll-type',
+    'twitch-ad-stitched-ad-pod', 'twitch-ad-stitched-ad-pod-position',
+    'twitch-ad-stitched-ad-pod-length', 'twitch-ad-stitched-ad-url',
+    'twitch-ad-stitched-ad-click-beacon-id', 'twitch-ad-stitched-ad-ad-format',
+    'twitch-ad-stitched-ad-af-icr-ad-id', 'twitch-ad-stitched-ad-af-icr-creative-id',
+    'twitch-ad-stitched-ad-af-icr-media-duration', 'twitch-ad-stitched-ad-dsa-ss-context',
+    'twitch-ad-stitched-ad-dsa-ss-location', 'twitch-ad-stitched-ad-dsa-version',
+    'twitch-ad-stitched-ad-loudness', 'twitch-ad-stitched-ad-line-item-id',
+    'twitch-ad-stitched-ad-rads-token',
 ]
 
 AD_TWITCH_TAGS = [
@@ -86,6 +132,26 @@ AD_TWITCH_TAGS = [
     'X-TV-TWITCH-AD-LOUDNESS',
     'X-TV-TWITCH-AD-LINE-ITEM-ID',
     'X-TV-TWITCH-AD-RADS-TOKEN',
+    # Additional Twitch ad tags
+    'X-TV-TWITCH-AD-STITCHED',
+    'X-TV-TWITCH-AD-STITCHED-AD',
+    'X-TV-TWITCH-AD-STITCHED-AD-ROLL',
+    'X-TV-TWITCH-AD-STITCHED-AD-ROLL-TYPE',
+    'X-TV-TWITCH-AD-STITCHED-AD-POD',
+    'X-TV-TWITCH-AD-STITCHED-AD-POD-POSITION',
+    'X-TV-TWITCH-AD-STITCHED-AD-POD-LENGTH',
+    'X-TV-TWITCH-AD-STITCHED-AD-URL',
+    'X-TV-TWITCH-AD-STITCHED-AD-CLICK-BEACON-ID',
+    'X-TV-TWITCH-AD-STITCHED-AD-AD-FORMAT',
+    'X-TV-TWITCH-AD-STITCHED-AD-AF-ICR-AD-ID',
+    'X-TV-TWITCH-AD-STITCHED-AD-AF-ICR-CREATIVE-ID',
+    'X-TV-TWITCH-AD-STITCHED-AD-AF-ICR-MEDIA-DURATION',
+    'X-TV-TWITCH-AD-STITCHED-AD-DSA-SS-CONTEXT',
+    'X-TV-TWITCH-AD-STITCHED-AD-DSA-SS-LOCATION',
+    'X-TV-TWITCH-AD-STITCHED-AD-DSA-VERSION',
+    'X-TV-TWITCH-AD-STITCHED-AD-LOUDNESS',
+    'X-TV-TWITCH-AD-STITCHED-AD-LINE-ITEM-ID',
+    'X-TV-TWITCH-AD-STITCHED-AD-RADS-TOKEN',
 ]
 
 # ---------------------------------------------------------------------------
@@ -95,12 +161,15 @@ _cache_lock = threading.Lock()
 
 _segment_cache = OrderedDict()
 SEGMENT_CACHE_MAX = 512
-SEGMENT_TTL = 300
+SEGMENT_TTL = 300  # 5 minutes
 
 _playlist_cache = OrderedDict()
-PLAYLIST_TTL = 4
+PLAYLIST_CACHE_MAX = 50
+PLAYLIST_TTL = 4  # refresh slightly more often than target duration
 
 _manifest_cache = OrderedDict()
+MANIFEST_CACHE_MAX = 10
+MANIFEST_TTL = 4  # refresh slightly more often than target duration
 
 
 def _cache_get(cache, key, ttl):
@@ -194,6 +263,17 @@ def _parse_ad_segments(lines):
                 ad_indices.add(i)
             continue
 
+        # LL-HLS: Partial Segments and Preload Hints
+        if s.startswith('#EXT-X-PART:'):
+            if in_daterange_ad or in_cue_ad:
+                ad_indices.add(i)
+            continue
+
+        if s.startswith('#EXT-X-PRELOAD-HINT:'):
+            if in_daterange_ad or in_cue_ad:
+                ad_indices.add(i)
+            continue
+
         if not s.startswith('#') and s:
             if in_daterange_ad or in_cue_ad:
                 ad_indices.add(i)
@@ -260,6 +340,9 @@ def _rewrite_url(absolute_url):
     if not proxy_base:
         return absolute_url
     with _ProxyState._lock:
+        # Keep the indirection table bounded during long-running playback.
+        while len(_ProxyState.url_map) >= 4096:
+            _ProxyState.url_map.pop(next(iter(_ProxyState.url_map)))
         key = uuid.uuid4().hex[:12]
         _ProxyState.url_map[key] = absolute_url
     return '%s/proxy/%s' % (proxy_base.rstrip('/'), key)
@@ -325,7 +408,7 @@ def _fetch(url, headers, timeout=30, stream=False):
     last_exc = None
     for attempt in range(3):
         try:
-            resp = session.get(url, headers=headers, timeout=timeout, stream=stream)
+            resp = session.get(url, headers=headers, timeout=timeout, stream=stream, allow_redirects=True)
             if resp.status_code == 429 or resp.status_code >= 500:
                 if attempt < 2:
                     time.sleep(0.3 * (attempt + 1))
@@ -334,7 +417,7 @@ def _fetch(url, headers, timeout=30, stream=False):
         except requests.exceptions.SSLError:
             import urllib3
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-            return session.get(url, headers=headers, timeout=timeout, stream=stream, verify=False)
+            return session.get(url, headers=headers, timeout=timeout, stream=stream, verify=False, allow_redirects=True)
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
             last_exc = e
             if attempt < 2:
@@ -379,6 +462,28 @@ class AdBlockHandler(BaseHTTPRequestHandler):
         else:
             self._respond(404, b'Not found', 'text/plain')
 
+    def do_HEAD(self):
+        parsed = urlparse(self.path)
+        if parsed.path.startswith('/proxy/'):
+            key = parsed.path[len('/proxy/'):]
+            with _ProxyState._lock:
+                target = _ProxyState.url_map.get(key)
+                headers = dict(_ProxyState.headers)
+            if target:
+                try:
+                    resp = _get_session().head(target, headers=headers, timeout=15,
+                                               allow_redirects=True)
+                    self.send_response(resp.status_code)
+                    for name in ('Content-Type', 'Content-Length', 'Content-Range', 'Accept-Ranges'):
+                        if resp.headers.get(name):
+                            self.send_header(name, resp.headers[name])
+                    self.end_headers()
+                    resp.close()
+                    return
+                except Exception:
+                    pass
+        self._respond(404, b'', 'text/plain')
+
     def _handle_manifest(self):
         with _ProxyState._lock:
             playlist_url = _ProxyState.playlist_url
@@ -388,7 +493,7 @@ class AdBlockHandler(BaseHTTPRequestHandler):
             self._respond(503, b'No playlist URL configured', 'text/plain')
             return
 
-        cached = _cache_get(_manifest_cache, playlist_url, PLAYLIST_TTL)
+        cached = _cache_get(_manifest_cache, playlist_url, MANIFEST_TTL)
         if cached is not None:
             self._respond(200, cached, 'application/vnd.apple.mpegurl')
             return
@@ -409,13 +514,22 @@ class AdBlockHandler(BaseHTTPRequestHandler):
             return
 
         content_type = resp.headers.get('Content-Type', 'application/vnd.apple.mpegurl')
-        processed = _process_playlist(resp.text, playlist_url)
+        # Handle Content-Encoding (gzip, deflate)
+        if 'gzip' in resp.headers.get('Content-Encoding', ''):
+            import gzip
+            content = gzip.decompress(resp.content).decode('utf-8')
+        elif 'deflate' in resp.headers.get('Content-Encoding', ''):
+            import zlib
+            content = zlib.decompress(resp.content).decode('utf-8')
+        else:
+            content = resp.text
+        processed = _process_playlist(content, playlist_url)
 
-        _cache_put(_manifest_cache, playlist_url, processed.encode('utf-8'), 10)
+        _cache_put(_manifest_cache, playlist_url, processed.encode('utf-8'), MANIFEST_CACHE_MAX)
 
-        if processed != resp.text:
+        if processed != content:
             log_utils.log('AdBlockProxy: Processed playlist (ads filtered)', log_utils.LOGDEBUG)
-            raw_lines = resp.text.splitlines()
+            raw_lines = content.splitlines()
             ad_lines = [l.strip() for l in raw_lines
                         if ('DATERANGE' in l or 'CUE' in l or 'DISCONTINUITY' in l
                             or 'X-TV-TWITCH-AD' in l)]
@@ -456,19 +570,32 @@ class AdBlockHandler(BaseHTTPRequestHandler):
                 return
 
             content_type = resp.headers.get('Content-Type', 'application/vnd.apple.mpegurl')
-            processed = _process_playlist(resp.text, target_url)
-            _cache_put(_playlist_cache, target_url, processed, 50)
+            # Handle Content-Encoding (gzip, deflate)
+            if 'gzip' in resp.headers.get('Content-Encoding', ''):
+                import gzip
+                content = gzip.decompress(resp.content).decode('utf-8')
+            elif 'deflate' in resp.headers.get('Content-Encoding', ''):
+                import zlib
+                content = zlib.decompress(resp.content).decode('utf-8')
+            else:
+                content = resp.text
+            processed = _process_playlist(content, target_url)
+            _cache_put(_playlist_cache, target_url, processed, PLAYLIST_CACHE_MAX)
             self._respond(200, processed.encode('utf-8'), content_type)
             return
 
-        cached_content = _cache_get(_segment_cache, target_url, SEGMENT_TTL)
+        range_header = self.headers.get('Range')
+        cached_content = None if range_header else _cache_get(_segment_cache, target_url, SEGMENT_TTL)
         if cached_content is not None:
             content, content_type = cached_content
             self._respond(200, content, content_type)
             return
 
         try:
-            resp = _fetch(target_url, headers, timeout=30, stream=True)
+            request_headers = dict(headers)
+            if range_header:
+                request_headers['Range'] = range_header
+            resp = _fetch(target_url, request_headers, timeout=30, stream=True)
             resp.raise_for_status()
         except (ConnectionResetError, BrokenPipeError):
             return
@@ -486,15 +613,24 @@ class AdBlockHandler(BaseHTTPRequestHandler):
             self._respond(502, b'Failed to read segment', 'text/plain')
             return
 
-        _cache_put(_segment_cache, target_url, (content, content_type), SEGMENT_CACHE_MAX)
-        self._respond(200, content, content_type)
+        if not range_header and resp.status_code == 200:
+            _cache_put(_segment_cache, target_url, (content, content_type), SEGMENT_CACHE_MAX)
+        response_headers = {}
+        if resp.status_code == 206:
+            response_headers['Content-Range'] = resp.headers.get('Content-Range', '')
+        if resp.headers.get('Accept-Ranges'):
+            response_headers['Accept-Ranges'] = resp.headers['Accept-Ranges']
+        self._respond(resp.status_code, content, content_type, response_headers)
 
-    def _respond(self, status, body, content_type):
+    def _respond(self, status, body, content_type, headers=None):
         try:
             self.send_response(status)
             self.send_header('Content-Type', content_type)
             self.send_header('Content-Length', str(len(body)))
             self.send_header('Cache-Control', 'no-cache')
+            for name, value in (headers or {}).items():
+                if value:
+                    self.send_header(name, value)
             self.end_headers()
             self.wfile.write(body)
         except (ConnectionResetError, BrokenPipeError):
